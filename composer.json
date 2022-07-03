@@ -1,6 +1,6 @@
 {
   "name": "sebk/small-swoole-patterns",
-  "licence": "GPL-3.0-only",
+  "licence": "GPL-3.0",
   "type": "library",
   "authors": [
     {
@@ -9,7 +9,7 @@
     }
   ],
   "require": {
-    "php": "8.1",
+    "php": ">=8.1",
     "ext-openswoole": ">=4.3"
   },
   "autoload": {
