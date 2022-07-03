@@ -6,7 +6,7 @@ This project provides implementations of async design patterns to open swoole pr
 
 Install openswoole :
 ```
-pear install openswoole
+pecl install openswoole
 ```
 
 Require the package with composer:
