@@ -23,8 +23,8 @@ class Observable
     protected array $rightListenners = [];
 
     // Wait groupes
-    private WaitGroup $methodWaitGroup;
-    private WaitGroup $listenersWaitGroup;
+    private WaitGroup|null $methodWaitGroup = null;
+    private WaitGroup|null $listenersWaitGroup = null;
 
     // Can run only once
     private bool $ran = false;
@@ -32,7 +32,7 @@ class Observable
     /**
      * @param \Closure $method
      */
-    public function __construct(\Closure $method)
+    public function __construct($method)
     {
         $this->method = $method;
     }
