@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  unit-test-openswoole:
+    container_name: small-openswoole-patterns-unit-test
+    build:
+      context: .
+      args:
+        - SWOOLE_PROJECT=openswoole
+        - SWOOLE_VERSION=
+    environment:
+      - BUILD=1 # If set to 0, the unit test are not launched and container will sleep to let you run all tests commands you want when you develop tests
+    volumes:
+      - .:/usr/lib/small-swoole-patterns
+  unit-test-swoole:
+    container_name: small-swoole-patterns-unit-test
+    build:
+      context: .
+      args:
+        - SWOOLE_PROJECT=swoole
+        - SWOOLE_VERSION=
+    environment:
+      - BUILD=1 # If set to 0, the unit test are not launched and container will sleep to let you run all tests commands you want when you develop tests
+    volumes:
+      - .:/usr/lib/small-swoole-patterns
+  redis:
+    image: redis:latest

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+if [ "$1" == "" ]
+then
+  echo "Missing tag argument";
+  exit 1
+fi
+
+bin/test
+git tag $1
+git push --tags

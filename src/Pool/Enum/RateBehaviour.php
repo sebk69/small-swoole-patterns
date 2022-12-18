@@ -6,7 +6,7 @@
  *  Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallSwoolePatterns\Pool\Manager\Enum;
+namespace Sebk\SmallSwoolePatterns\Pool\Enum;
 
 enum RateBehaviour
 {

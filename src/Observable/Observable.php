@@ -8,6 +8,7 @@
 namespace Sebk\SmallSwoolePatterns\Observable;
 
 use Sebk\SmallSwoolePatterns\Array\Map;
+use Sebk\SmallSwoolePatterns\Observable\Exception\ObservableAlreadyRanException;
 use Swoole\Coroutine;
 use Swoole\Coroutine\WaitGroup;
 

@@ -16,8 +16,6 @@ class PooledConnection
      */
     public function getConnection(): mixed
     {
-        $this->lock();
-
         return $this->connection;
     }
 
@@ -26,7 +24,7 @@ class PooledConnection
      * @return void
      * @throws PooledConnectionBusyException
      */
-    protected function lock(): void
+    public function lock(): void
     {
         if ($this->isBusy) {
             throw new PooledConnectionBusyException('Connection is busy');

@@ -8,15 +8,15 @@
 
 namespace Sebk\SmallSwoolePatterns\Pool;
 
+use Sebk\SmallSwoolePatterns\Manager\Contract\PoolManagerInterface;
 use Sebk\SmallSwoolePatterns\Pool\Bean\PooledConnection;
-use Sebk\SmallSwoolePatterns\Pool\Contract\PoolManagerInterface;
+use Sebk\SmallSwoolePatterns\Pool\Bean\RateController;
 use Sebk\SmallSwoolePatterns\Pool\Exception\ConnectionNotInPoolException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\InvalidParameterException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\PooledConnectionBusyException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\PooledConnectionNoneFreeException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\RateControlNotActivatedException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\RateNotActivatedException;
-use Sebk\SmallSwoolePatterns\Pool\Manager\Bean\RateController;
 use Swoole\Coroutine\Server\Connection;
 
 class Pool
@@ -24,7 +24,7 @@ class Pool
 
     protected RateController|null $rateController = null;
     /** @var PooledConnection[] */
-    protected array $pooledConnections;
+    protected array $pooledConnections = [];
 
     /**
      * @param PoolManagerInterface $poolManager
@@ -81,7 +81,9 @@ class Pool
     {
         // Try to return first free connection
         try {
-            return $this->getFirstFree()->getConnection();
+            $pooledConnection = $this->getFirstFree();
+            $pooledConnection->lock();
+            return $pooledConnection->getConnection();
         } catch (PooledConnectionNoneFreeException $e) {}
 
         // If max connections reached
@@ -91,12 +93,14 @@ class Pool
 
             // And try to return first free connection
             try {
-                return $this->getFirstFree()->getConnection();
+                return $this->getFirstFree()->lock()->getConnection();
             } catch (PooledConnectionNoneFreeException $e) {}
         }
 
         // Else create new connection
-        return $this->pooledConnections[] = $this->poolManager->create();
+        $pooledConnection = new PooledConnection($this->poolManager->create(), true);
+        $this->pooledConnections[] = $pooledConnection;
+        return $pooledConnection->getConnection();
     }
 
     /**
@@ -127,11 +131,20 @@ class Pool
     {
         foreach ($this->pooledConnections as $pooledConnection) {
             try {
-                return $pooledConnection->getConnection();
+                return $pooledConnection;
             } catch (PooledConnectionBusyException $e) {}
         }
 
         throw new PooledConnectionNoneFreeException('No free connection');
+    }
+
+    /**
+     * Get pool manager
+     * @return PoolManagerInterface
+     */
+    public function getManager(): PoolManagerInterface
+    {
+        return $this->poolManager;
     }
 
 }

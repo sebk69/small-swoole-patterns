@@ -6,12 +6,12 @@
  *  Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallSwoolePatterns\Pool\Contract;
+namespace Sebk\SmallSwoolePatterns\Manager\Contract;
 
 interface PoolManagerInterface
 {
 
     public function create();
-    public function close(mixed $connection = null);
+    public function close(mixed $connection);
 
 }

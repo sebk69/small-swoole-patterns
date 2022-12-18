@@ -6,9 +6,9 @@
  *  Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallSwoolePatterns\Pool\Manager;
+namespace Sebk\SmallSwoolePatterns\Manager\Connection;
 
-use Sebk\SmallSwoolePatterns\Pool\Contract\PoolManagerInterface;
+use Sebk\SmallSwoolePatterns\Manager\Contract\PoolManagerInterface;
 use Sebk\SmallSwoolePatterns\Pool\Exception\InvalidHostnameException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\InvalidParameterException;
 use Sebk\SmallSwoolePatterns\Pool\Exception\InvalidPortException;
@@ -17,8 +17,8 @@ use Swoole\Coroutine\Http\Client;
 class HttpClientManager implements PoolManagerInterface
 {
 
-    public const IP_REGEXPR = '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$';
-    public const HOST_REGEXPR = '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$';
+    public const IP_REGEXPR = '/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/';
+    public const HOST_REGEXPR = '/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/';
 
     /**
      * @param string $host
@@ -33,7 +33,7 @@ class HttpClientManager implements PoolManagerInterface
         protected bool $isSsl = true,
         protected array | null $settings = null
     ) {
-        if (preg_match(static::IP_REGEXPR) === false && preg_match(static::HOST_REGEXPR) === false) {
+        if (preg_match(static::IP_REGEXPR, $this->host) === false && preg_match(static::HOST_REGEXPR, $this->host) === false) {
             throw new InvalidParameterException('Hostname must be an ip or a string responding to RFC 1123 (' . $this->host . ')');
         }
 
@@ -61,7 +61,7 @@ class HttpClientManager implements PoolManagerInterface
      * @param Client $connection
      * @return void
      */
-    public function close(Client $connection)
+    public function close(mixed $connection)
     {
         $connection->close();
     }

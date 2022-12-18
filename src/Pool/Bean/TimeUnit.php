@@ -6,10 +6,10 @@
  *  Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallSwoolePatterns\Pool\Manager\Bean;
+namespace Sebk\SmallSwoolePatterns\Pool\Bean;
 
+use Sebk\SmallSwoolePatterns\Pool\Enum\RateBehaviour;
 use Sebk\SmallSwoolePatterns\Pool\Exception\InvalidParameterException;
-use Sebk\SmallSwoolePatterns\Pool\Manager\Enum\RateBehaviour;
 
 class TimeUnit
 {

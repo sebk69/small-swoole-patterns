@@ -5,7 +5,7 @@
  *  Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallSwoolePatterns\Observable;
+namespace Sebk\SmallSwoolePatterns\Observable\Exception;
 
 class ObservableAlreadyRanException extends \Exception
 {
