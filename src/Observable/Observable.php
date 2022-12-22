@@ -11,6 +11,7 @@ use Sebk\SmallSwoolePatterns\Array\Map;
 use Sebk\SmallSwoolePatterns\Observable\Exception\ObservableAlreadyRanException;
 use Swoole\Coroutine;
 use Swoole\Coroutine\WaitGroup;
+use Sebk\SmallSwoolePatterns\Compatibility\OpenSwooleWaitGroup;
 
 class Observable
 {
@@ -24,8 +25,8 @@ class Observable
     protected array $rightListenners = [];
 
     // Wait groupes
-    private WaitGroup|null $methodWaitGroup = null;
-    private WaitGroup|null $listenersWaitGroup = null;
+    private WaitGroup|OpenSwooleWaitGroup|null $methodWaitGroup = null;
+    private WaitGroup|OpenSwooleWaitGroup|null $listenersWaitGroup = null;
 
     // Can run only once
     private bool $ran = false;
@@ -72,7 +73,7 @@ class Observable
         Coroutine::create(function(...$params) {
             // Create wait group
             if ($this->methodWaitGroup === null) {
-                $this->methodWaitGroup = new WaitGroup(1);
+                $this->methodWaitGroup = !class_exists(WaitGroup::class) ? new OpenSwooleWaitGroup(1) : new WaitGroup(1);
             } else {
                 $this->methodWaitGroup->add(1);
             }
@@ -87,7 +88,11 @@ class Observable
             } catch(\Exception $e) {
                 // Redirect exception to right listeners
                 $subscribersDirection = 'right';
-                $this->listenersWaitGroup = new WaitGroup(count($this->rightListenners));
+                $this->listenersWaitGroup =
+                    !class_exists(WaitGroup::class) ?
+                        new OpenSwooleWaitGroup(count($this->rightListenners)) :
+                        new WaitGroup(count($this->rightListenners))
+                ;
                 (new Map($this->rightListenners, function(\Closure $closure) use ($e) {
                     $closure($e);
                 }, $this->listenersWaitGroup))->run();
@@ -95,7 +100,11 @@ class Observable
 
             // Map left listeners
             if ($subscribersDirection == 'left') {
-                $this->listenersWaitGroup = new WaitGroup(count($this->leftListeners));
+                $this->listenersWaitGroup =
+                    !class_exists(WaitGroup::class) ?
+                        new OpenSwooleWaitGroup(count($this->leftListeners)) :
+                        new WaitGroup(count($this->leftListeners))
+                ;
                 (new Map($this->leftListeners, function(\Closure $closure) use ($data) {
                     $closure($data);
                 }, $this->listenersWaitGroup))->run();

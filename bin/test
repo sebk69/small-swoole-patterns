@@ -3,6 +3,5 @@
 set -e
 
 docker-compose up -d --build
-
-docker exec -it small-openswoole-patterns-unit-test bash -c "COMPOSER_ALLOW_SUPERUSER=1 composer update && ./vendor/bin/phpunit --testdox tests"
 docker exec -it small-swoole-patterns-unit-test bash -c "COMPOSER_ALLOW_SUPERUSER=1 composer update && ./vendor/bin/phpunit --testdox tests"
+docker exec -it small-openswoole-patterns-unit-test bash -c "COMPOSER_ALLOW_SUPERUSER=1 composer update && ./vendor/bin/phpunit --testdox tests"

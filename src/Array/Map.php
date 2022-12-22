@@ -9,6 +9,7 @@ namespace Sebk\SmallSwoolePatterns\Array;
 
 use Swoole\Coroutine;
 use Swoole\Coroutine\WaitGroup;
+use Sebk\SmallSwoolePatterns\Compatibility\OpenSwooleWaitGroup;
 
 class Map
 {
@@ -19,15 +20,15 @@ class Map
     /**
      * @param array $data
      * @param \Closure $closure
-     * @param WaitGroup|null $waitGroup
+     * @param WaitGroup|OpenSwooleWaitGroup|null $waitGroup
      */
-    public function __construct(protected array $data, protected \Closure $closure, protected ?WaitGroup $waitGroup = null) {}
+    public function __construct(protected array $data, protected \Closure $closure, protected WaitGroup|OpenSwooleWaitGroup|null $waitGroup = null) {}
 
     /**
      * Get waitGroup
-     * @return WaitGroup
+     * @return WaitGroup|OpenSwooleWaitGroup
      */
-    public function getWaitGroup(): WaitGroup
+    public function getWaitGroup(): WaitGroup|OpenSwooleWaitGroup
     {
         return $this->waitGroup;
     }
@@ -39,7 +40,11 @@ class Map
     public function run(): self
     {
         if ($this->waitGroup == null) {
-            $this->waitGroup = new WaitGroup(count($this->data));
+            if (class_exists(WaitGroup::class)) {
+                $this->waitGroup = new WaitGroup(count($this->data));
+            } else {
+                $this->waitGroup = new OpenSwooleWaitGroup(count($this->data));
+            }
         }
 
         foreach ($this->data as $id => $elem) {
