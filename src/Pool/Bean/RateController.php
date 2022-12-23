@@ -97,8 +97,6 @@ class RateController
         $this->units[$unit]->addTick();
 
         // Check rate
-        $rateProperty = 'numRequestsPer' . $ucItem;
-        $behaviourProperty = $lowerItem . 'Behaviour';
         while ($this->units[$unit]->getNumTicks() > $this->units[$unit]->getMaxTicks()) {
             switch ($this->units[$unit]->getBehaviour()) {
                 case RateBehaviour::waiting:

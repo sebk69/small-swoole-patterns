@@ -140,6 +140,8 @@ class TimeUnit
     public function addTick(): TimeUnit
     {
         $this->numTicks++;
+
+        return $this;
     }
 
     /**
@@ -149,9 +151,9 @@ class TimeUnit
      */
     public function hasChanged(bool $addTickOnChange = false): bool
     {
-        if ($this->units[$unit]->getLastTick() != $this->units[$unit]->getTime()) {
-            $this->units[$unit]->setNumTicks(0);
-            $this->units[$unit]->setLastTick();
+        if ($this->getLastTick() != $this->getTime()) {
+            $this->setNumTicks(0);
+            $this->setLastTick();
             
             if ($addTickOnChange) {
                 $this->addTick();
