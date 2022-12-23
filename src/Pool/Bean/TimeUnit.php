@@ -130,7 +130,7 @@ class TimeUnit
      */
     public function getTime(): int
     {
-        return floor(time() / $this->unitsForSeconds);
+        return ceil(microtime(true) / $this->unitsForSeconds);
     }
 
     /**

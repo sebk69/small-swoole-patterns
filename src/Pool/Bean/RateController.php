@@ -31,7 +31,7 @@ class RateController
             throw new InvalidParameterException('The wait time must be superior to 0');
         }
         
-        $this->lastTick = microtime();
+        $this->lastTick = microtime(true);
     }
 
     /**
@@ -39,56 +39,65 @@ class RateController
      * @param string $name
      * @param int $unitForSecond
      * @param RateBehaviour $behaviour
-     * @return void
+     * @return $this
+     * @throws InvalidParameterException
      */
-    public function addUnitToControl(string $name, int $unitForSecond, RateBehaviour $behaviour = RateBehaviour::waiting)
+    public function addUnitToControl(string $name, int $unitForSecond, RateBehaviour $behaviour = RateBehaviour::waiting, int $maxTicks): self
     {
-        $this->units[$name] = new TimeUnit($unitForSecond, $behaviour);
+        $this->units[$name] = new TimeUnit($unitForSecond, $behaviour, $maxTicks);
+
+        return $this;
     }
 
     /**
      * Perform tick
-     * @return void
+     * @return $this
      * @throws RateExeededException
      */
-    public function tick()
+    public function tick(): self
     {
         $this->waitMinimumInterval();
         
         foreach ($this->units as $unit => $timeUnit) {
             $this->tickUnit($unit);
         }
+
+        return $this;
     }
 
     /**
      * Sleep
-     * @return void
+     * @return $this
      */
-    private function wait()
+    private function wait(): self
     {
-        usleep(1);
+        usleep($this->waitTime);
+
+        return $this;
     }
 
     /**
      * Wait for minimum interval
-     * @return void
+     * @return $this
      */
     private function waitMinimumInterval()
     {
-        if ($this->lastTick > microtime(true) - $this->minInterval) {
+        while (microtime(true) - $this->lastTick < $this->minInterval / 100000) {
             $this->wait();
         }
 
         $this->lastTick = microtime(true);
+
+        return $this;
     }
 
     /**
      * Tick unit item
      * @param string $unit
-     * @return void
+     * @return $this
      * @throws RateExeededException
      */
-    private function tickUnit(string $unit): void
+    private function tickUnit(string $unit): self
     {
         // Has changed ?
         $this->units[$unit]->hasChanged();
@@ -102,13 +111,15 @@ class RateController
                 case RateBehaviour::waiting:
                     // Check times change
                     while(!$this->units[$unit]->hasChanged(true)) {
-                        usleep(1);
+                        usleep($this->minInterval);
                     }
                     break;
                 case RateBehaviour::exception:
                     throw new RateExeededException('The seconds maximum rate has been exeeded');
             }
         }
+
+        return $this;
     }
 
 }
