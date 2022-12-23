@@ -95,7 +95,7 @@ class Observable
                 ;
                 (new Map($this->rightListenners, function(\Closure $closure) use ($e) {
                     $closure($e);
-                }, $this->listenersWaitGroup))->run();
+                }, $this->listenersWaitGroup))->run()->wait();
             }
 
             // Map left listeners
@@ -107,7 +107,7 @@ class Observable
                 ;
                 (new Map($this->leftListeners, function(\Closure $closure) use ($data) {
                     $closure($data);
-                }, $this->listenersWaitGroup))->run();
+                }, $this->listenersWaitGroup))->run()->wait();
             }
 
             // Unlock method waitGroup

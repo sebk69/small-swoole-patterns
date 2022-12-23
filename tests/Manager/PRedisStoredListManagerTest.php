@@ -10,27 +10,54 @@ use Sebk\SmallSwoolePatterns\Pool\Pool;
 class PRedisStoredListManagerTest extends TestCase
 {
 
-    public function testList()
+    private PRedisStoredListManager $list;
+    
+    public function setUp(): void
     {
-        $list = new PRedisStoredListManager((new Pool(new PRedisClientManager('tcp://redis'), 10)));
-
+        $this->list = new PRedisStoredListManager((new Pool(new PRedisClientManager('tcp://redis'), 10)));
+        
         // Setup list
-        $list->reset('test');
-        $list->lpush('test', 1);
-        $list->lpush('test', 2);
-        $list->rpush('test', 3);
+        $this->list->reset('test');
+        $this->list->lpush('test', 1);
+        $this->list->lpush('test', 2);
+        $this->list->rpush('test', 3);
+    }
 
+    public function testPop()
+    {
+        
         // Get all without popping
-        $array = $list->all('test');
+        $array = $this->list->all('test');
         $this->assertIsArray($array);
         $this->assertEquals(3, count($array));
         $this->assertEquals(2, $array[0]);
         $this->assertEquals(1, $array[1]);
         $this->assertEquals(3, $array[2]);
 
-        $this->assertEquals(2, $list->lpop('test'));
-        $this->assertEquals(3, $list->rpop('test'));
-        $this->assertEquals(1, $list->lpop('test'));
+        $this->assertEquals(2, $this->list->lpop('test'));
+        $this->assertEquals(3, $this->list->rpop('test'));
+        $this->assertEquals(1, $this->list->lpop('test'));
+
+    }
+
+    public function testRemove()
+    {
+
+        $this->list->lrem('test', 2, 1);
+        $this->assertEquals(1, $this->list->lpop('test'));
+        $this->assertEquals(3, $this->list->lpop('test'));
+
+    }
+
+    public function testReset()
+    {
+
+        $this->list->reset('test');
+        $array = $this->list->all('test');
+
+        $this->assertIsArray($array);
+        $this->assertEquals(0, count($array));
+
     }
 
 }
