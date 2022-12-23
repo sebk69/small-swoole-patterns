@@ -11,12 +11,12 @@ class Ticket
     /**
      * @param int $ticketId
      */
-    public function __construct(protected int $ticketId) {}
+    public function __construct(protected string|int $ticketId) {}
 
     /**
      * @return int
      */
-    public function getTicketId(): int
+    public function getTicketId(): string|int
     {
         return $this->ticketId;
     }
@@ -31,10 +31,13 @@ class Ticket
 
     /**
      * @param bool $waiting
+     * @return $this
      */
-    public function setWaiting(bool $waiting): void
+    public function setWaiting(bool $waiting): self
     {
         $this->waiting = $waiting;
+
+        return $this;
     }
 
 }

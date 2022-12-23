@@ -3,7 +3,7 @@
 namespace Sebk\SmallSwoolePatterns\Resource;
 
 use Sebk\SmallSwoolePatterns\Manager\Contract\StoredListManagerInterface;
-use Sebk\SmallSwoolePatterns\Pool\Pool;
+use Sebk\SmallSwoolePatterns\Resource\Bean\Resource;
 
 class ResourceFactory
 {
@@ -15,10 +15,10 @@ class ResourceFactory
      * @param array $config
      * @param StoredListManagerInterface $storedListManager
      */
-    public function __construct(array $config, StoredListManagerInterface $storedListManager)
+    public function __construct(array $config, protected StoredListManagerInterface $storedListManager)
     {
-        foreach ($config as $resourceName => $resourceConfig) {
-            $this->resources[$resourceName] = new Resource($resourceName, $storedListManager);
+        foreach ($config as $resourceName) {
+            $this->resources[$resourceName] = new Resource($resourceName, $this->storedListManager);
         }
     }
 
@@ -29,6 +29,10 @@ class ResourceFactory
      */
     public function get(string $resourceName): Resource
     {
+        if (!array_key_exists($resourceName, $this->resources)) {
+            return $this->resources[$resourceName] = new Resource($resourceName, $this->storedListManager);
+        }
+
         return $this->resources[$resourceName];
     }
 

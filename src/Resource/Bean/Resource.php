@@ -1,11 +1,12 @@
 <?php
 
-namespace Sebk\SmallSwoolePatterns\Resource;
+namespace Sebk\SmallSwoolePatterns\Resource\Bean;
 
+use Sebk\SmallSwoolePatterns\Array\Map;
 use Sebk\SmallSwoolePatterns\Manager\Contract\StoredListManagerInterface;
-use Sebk\SmallSwoolePatterns\Resource\Bean\Ticket;
 use Sebk\SmallSwoolePatterns\Resource\Enum\GetResourceBehaviour;
 use Sebk\SmallSwoolePatterns\Resource\Exception\ResourceNotFreeException;
+use function Co\run;
 use function Swoole\Coroutine\map;
 
 class Resource
@@ -29,7 +30,7 @@ class Resource
     public function acquireResource(GetResourceBehaviour $behaviour, Ticket|null $ticket = null): Ticket
     {
         /** @var Ticket[] $waitingList */
-        $waitingList = map($this->listManager->all(), function ($ticketId) { new Ticket($ticketId); });
+        $waitingList = (new Map($this->listManager->all($this->name), function ($ticketId) { new Ticket($ticketId); }))->run()->wait()->getResult();
 
         // The first ticket is mine
         if ($ticket != null && $waitingList[0]->getTicketId() == $ticket->getTicketId()) {
@@ -66,7 +67,7 @@ class Resource
             do {
                 usleep($this->waitingRetryTime);
                 /** @var Ticket[] $waitingList */
-                $waitingList = map($this->listManager->all(), function ($ticketId) { new Ticket($ticketId); });
+                $waitingList = map($this->listManager->all($this->name), function ($ticketId) { new Ticket($ticketId); });
 
                 if ($waitingList[0]->getTicketId() == $ticket->getTicketId()) {
                     $ticket->setWaiting(false);
@@ -113,7 +114,7 @@ class Resource
             ;
         } while(!self::checkTicketIdUniqueness($ticketId, $waitingList));
 
-        return $ticketId;
+        return new Ticket($ticketId);
     }
 
     /**
