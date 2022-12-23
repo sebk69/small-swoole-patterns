@@ -61,7 +61,7 @@ class RateControllerTest extends TestCase
         $start = microtime(true);
         $rateController->tick();
         $rateController->tick();
-        $this->assertGreaterThanOrEqual(1, microtime(true) - $start);
+        $this->assertGreaterThanOrEqual(0.99, microtime(true) - $start);
 
     }
 

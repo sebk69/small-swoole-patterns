@@ -35,7 +35,7 @@ class PooledConnectionTest extends TestCase
         $this->pooledConnection->lock();
         $this->pooledConnection->unlock();
         $this->pooledConnection->lock();
-        
+
     }
 
 }

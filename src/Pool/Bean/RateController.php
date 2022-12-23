@@ -39,10 +39,11 @@ class RateController
      * @param string $name
      * @param int $unitForSecond
      * @param RateBehaviour $behaviour
+     * @param int $maxTicks
      * @return $this
      * @throws InvalidParameterException
      */
-    public function addUnitToControl(string $name, int $unitForSecond, RateBehaviour $behaviour = RateBehaviour::waiting, int $maxTicks): self
+    public function addUnitToControl(string $name, int $unitForSecond, RateBehaviour $behaviour, int $maxTicks): self
     {
         $this->units[$name] = new TimeUnit($unitForSecond, $behaviour, $maxTicks);
 

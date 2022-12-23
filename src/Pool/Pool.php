@@ -55,7 +55,7 @@ class Pool
      */
     public function activateRateController(int $minInterval = 1, int $waitTime = 1): RateController
     {
-        return new RateController($minInterval, $waitTime);
+        return $this->rateController = new RateController($minInterval, $waitTime);
     }
 
     /**
@@ -79,6 +79,11 @@ class Pool
      */
     public function get(): mixed
     {
+        // Check rate
+        if ($this->rateController !== null) {
+            $this->rateController->tick();
+        }
+
         // Try to return first free connection
         try {
             $pooledConnection = $this->getFirstFree();
