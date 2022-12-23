@@ -21,25 +21,29 @@ class PooledConnection
 
     /**
      * Lock connection
-     * @return void
+     * @return $this
      * @throws PooledConnectionBusyException
      */
-    public function lock(): void
+    public function lock(): self
     {
         if ($this->isBusy) {
             throw new PooledConnectionBusyException('Connection is busy');
         }
 
         $this->isBusy = true;
+
+        return $this;
     }
 
     /**
      * Unlock connection
-     * @return void
+     * @return $this
      */
-    public function unlock(): void
+    public function unlock(): self
     {
         $this->isBusy = false;
+
+        return $this;
     }
 
 }
