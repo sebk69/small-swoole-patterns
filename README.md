@@ -49,7 +49,7 @@ var_dump($result);
 
 ### Observable
 
-This is an implemntation of observable pattern on a callback.
+This is an implementation of observable pattern on a callback.
 
 ```php
 use Sebk\SmallSwoolePatterns\Observable\Observable;
@@ -81,3 +81,132 @@ $getObserver->wait();
 ```
 
 In this example, we print homepage of google, yahoo and qwant on async calls.
+
+
+### Pool
+
+This is an implementation of pool pattern.
+
+Pools are useful to manage async processes in order to manage connections to server resources.
+
+#### Create the Pool
+```php
+$pool = new \Sebk\SmallSwoolePatterns\Pool\Pool(
+    new \Sebk\SmallSwoolePatterns\Manager\Connection\PRedisClientManager('tcp://my-redis.net'),
+    10,
+    100
+);
+```
+
+Here we have created
+- A PRedis client pool (first parameter)
+- With a maximum of 10 clients at the same time (second parameter).
+- If no more clients available, the pool try to lock a new client every 100µs (third parameter)
+
+### Using client process
+
+To get a client, use get method :
+```php
+$client = $pool->get();
+```
+
+You have now locked the client and can use it :
+```php
+$client->get('my-app:key')
+```
+
+Now we have finished the use, we must release the client :
+```php
+$pool->put($client);
+```
+
+Putting together in async process will be :
+```php
+$pool = new \Sebk\SmallSwoolePatterns\Pool\Pool(
+    new \Sebk\SmallSwoolePatterns\Manager\Connection\PRedisClientManager('tcp://my-redis.net'),
+    10,
+    100
+);
+
+(new \Sebk\SmallSwoolePatterns\Array\Map(range(1, 100), ($i) use($pool) => {
+    $client = $pool->get();
+    $client->put('my-app:sum:' . $i, $i +$i);
+    $pool->put($client);
+}));
+```
+
+In this use case, the number of concurrent connections can't be more than 10 connections at the same time even the process is async.
+
+Using one client destroy the async advantages while using client will wait for previous end.
+
+Using a new client at each time can overload your memory and server.
+
+### Rate control
+
+You can control the server limitations using rate control.
+
+#### Activating rate control
+
+```php
+($pool = new \Sebk\SmallSwoolePatterns\Pool\Pool(
+    new \Sebk\SmallSwoolePatterns\Manager\Connection\PRedisClientManager('tcp://my-redis.net'),
+    10,
+    100
+))->activateRateController(100, 10);
+```
+
+In this code, the pool is waiting you are getting clients no more than 100µs. If less, it will wait 10µs before retry.
+
+#### Using rate control for server limitation
+
+For this example, we will consider that you want to connect to a provider http api. You have a limitation of 3000 requests by minutes.
+
+You can activate a unit control to observe the provider limitations even your code is faster :
+```php
+($pool = new \Sebk\SmallSwoolePatterns\Pool\Pool(
+    new \Sebk\SmallSwoolePatterns\Manager\Connection\HttpClientManager('api.my-provider.net'),
+    10,
+    100
+))->activateRateController(100, 10)
+    ->addUnitToControl('minutes', 60, \Sebk\SmallSwoolePatterns\Pool\Enum\RateBehaviour::waiting, 3000);
+
+(new \Sebk\SmallSwoolePatterns\Array\Map(range(1, 100), ($productId) use($pool) => {
+    $client = $pool->get();
+    $uri = 'getProduct/{productId}'
+    $product = json_decode($client->get(str_replace('{productId}', $productId, $uri)));
+    $pool->put($client);
+    
+    return $product;
+}))->run()->wait();
+```
+
+### Resource
+
+You can manage resource access with resource pattern :
+```php
+$factory = new \Sebk\SmallSwoolePatterns\Resource\ResourceFactory();
+$resource = $factory->get('testResource1');
+$ticket = $resource->acquireResource(\Sebk\SmallSwoolePatterns\Resource\Enum\GetResourceBehaviour::exceptionIfNotFree);
+$resource->releaseResource($ticket);
+```
+
+In async processes you can wait the others processes to unlock resource :
+```php
+$factory = new \Sebk\SmallSwoolePatterns\Resource\ResourceFactory();
+$resource = $factory->get('testResource1');
+$ticket = $resource->acquireResource(\Sebk\SmallSwoolePatterns\Resource\Enum\waitingForFree);
+$resource->releaseResource($ticket);
+```
+
+Or manage yourself the waiting process :
+```php
+$factory = new \Sebk\SmallSwoolePatterns\Resource\ResourceFactory();
+$resource = $factory->get('testResource1');
+$ticket = $resource->acquireResource(\Sebk\SmallSwoolePatterns\Resource\Enum\GetResourceBehaviour::getTicket);
+while ($ticket->isWaiting()) {
+    doStuff();
+    usleep(100);
+}
+doResourceStuff();
+$resource->releaseResource($ticket);
+```
