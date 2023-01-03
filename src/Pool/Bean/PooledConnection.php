@@ -12,7 +12,6 @@ class PooledConnection
     /**
      * Lock connection and return it
      * @return mixed
-     * @throws PooledConnectionBusyException
      */
     public function getConnection(): mixed
     {

@@ -75,7 +75,6 @@ class Pool
     /**
      * Get connection
      * @return mixed
-     * @throws PooledConnectionBusyException
      */
     public function get(): mixed
     {
@@ -86,10 +85,11 @@ class Pool
 
         // Try to return first free connection
         try {
-            $pooledConnection = $this->getFirstFree();
-            $pooledConnection->lock();
+            $pooledConnection = $this->getFirstFree()->lock();
+
             return $pooledConnection->getConnection();
         } catch (PooledConnectionNoneFreeException $e) {}
+        catch (PooledConnectionBusyException $e) {}
 
         // If max connections reached
         while (count($this->pooledConnections) >= $this->maxConnectors) {
@@ -100,6 +100,7 @@ class Pool
             try {
                 return $this->getFirstFree()->lock()->getConnection();
             } catch (PooledConnectionNoneFreeException $e) {}
+            catch (PooledConnectionBusyException $e) {}
         }
 
         // Else create new connection
