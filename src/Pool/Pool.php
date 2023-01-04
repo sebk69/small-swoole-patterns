@@ -85,22 +85,20 @@ class Pool
 
         // Try to return first free connection
         try {
-            $pooledConnection = $this->getFirstFree()->lock();
+            $pooledConnection = $this->getFirstFree();
 
             return $pooledConnection->getConnection();
         } catch (PooledConnectionNoneFreeException $e) {}
-        catch (PooledConnectionBusyException $e) {}
 
         // If max connections reached
         while (count($this->pooledConnections) >= $this->maxConnectors) {
             // Sleep
-            usleep($this->waitTime);
+            usleep(100);
 
             // And try to return first free connection
             try {
-                return $this->getFirstFree()->lock()->getConnection();
+                return $this->getFirstFree()->getConnection();
             } catch (PooledConnectionNoneFreeException $e) {}
-            catch (PooledConnectionBusyException $e) {}
         }
 
         // Else create new connection
@@ -136,9 +134,10 @@ class Pool
     protected function getFirstFree(): PooledConnection
     {
         foreach ($this->pooledConnections as $pooledConnection) {
-            try {
+            if (!$pooledConnection->isBusy()) {
+                $pooledConnection->lock();
                 return $pooledConnection;
-            } catch (PooledConnectionBusyException $e) {}
+            }
         }
 
         throw new PooledConnectionNoneFreeException('No free connection');

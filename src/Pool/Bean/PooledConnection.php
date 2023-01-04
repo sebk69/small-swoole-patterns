@@ -44,5 +44,10 @@ class PooledConnection
 
         return $this;
     }
+    
+    public function isBusy(): bool
+    {
+        return $this->isBusy;
+    }
 
 }
