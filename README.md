@@ -1,6 +1,16 @@
 # small-swoole-patterns
-## About
+
 This project provides implementations of async design patterns to open swoole projects.
+
+# Migrated
+
+This lib has been migrated to [framagit](https://framagit.org/small) project.
+
+A new composer package is available at https://packagist.org/packages/small/swoole-patterns
+
+Future commits will be done on framagit.
+
+This repository will be removed in few month.
 
 ## Install
 
